@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Windows Vista Aero — Siva Chandiran R Portfolio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  
+  <!-- GSAP for authentic Vista animations & Draggable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+  
+  <!-- Lenis for buttery-smooth scrolling inside window viewports -->
+  <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            segoe: ['"Segoe UI"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['Syne', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* =================================================================
+       WINDOWS VISTA AERO GLASS ENGINE
+       ================================================================= */
+    :root {
+      --aero-tint: rgba(30, 75, 115, 0.45);
+      --aero-blur: 24px;
+      --aero-border: rgba(255, 255, 255, 0.45);
+      --aero-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+      --aero-glow: 0 16px 45px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b1a28;
+      color: #1e293b;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Vista Aero Window Style */
+    .vista-window {
+      position: absolute;
+      background: rgba(240, 244, 250, 0.94);
+      border-radius: 9px 9px 6px 6px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 35px rgba(20, 110, 200, 0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      will-change: transform, opacity;
+      touch-action: none;
+    }
+
+    .vista-window.active {
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 0 1.5px rgba(110, 200, 255, 0.8), 0 0 45px rgba(45, 150, 255, 0.45);
+    }
+
+    /* Aero Glass Titlebar */
+    .aero-titlebar {
+      height: 34px;
+      background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.5) 0%, 
+        rgba(220, 235, 250, 0.25) 45%, 
+        rgba(40, 95, 145, 0.35) 50%, 
+        rgba(10, 45, 80, 0.55) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(255, 255, 255, 0.7);
+      cursor: grab;
+      position: relative;
+    }
+
+    .vista-window.active .aero-titlebar {
+      background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.65) 0%, 
+        rgba(175, 215, 255, 0.4) 48%, 
+        rgba(25, 115, 195, 0.5) 50%, 
+        rgba(5, 55, 115, 0.7) 100%);
+    }
+
+    .aero-titlebar:active {
+      cursor: grabbing;
+    }
+
+    /* Vista Pearl / Orb Close, Max, Min buttons */
+    .vista-btn {
+      width: 27px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      transition: all 0.15s ease;
+      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(120,160,200,0.4) 49%, rgba(30,70,120,0.6) 50%, rgba(15,40,70,0.7) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .vista-btn:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(160,200,240,0.6) 49%, rgba(45,110,180,0.8) 50%, rgba(20,60,110,0.9) 100%);
+    }
+    .vista-btn-close {
+      width: 44px;
+      background: linear-gradient(180deg, rgba(255,180,180,0.5) 0%, rgba(240,110,110,0.5) 49%, rgba(200,30,30,0.75) 50%, rgba(140,10,10,0.85) 100%);
+      border-color: rgba(255, 160, 160, 0.6);
+    }
+    .vista-btn-close:hover {
+      background: linear-gradient(180deg, rgba(255,200,200,0.8) 0%, rgba(255,100,100,0.7) 49%, rgba(230,20,20,0.95) 50%, rgba(180,0,0,1) 100%);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.9), 0 0 12px rgba(255, 50, 50, 0.8);
+    }
+
+    /* Vista Taskbar */
+    .vista-taskbar {
+      height: 44px;
+      background: linear-gradient(180deg, 
+        rgba(50, 65, 80, 0.82) 0%, 
+        rgba(25, 35, 45, 0.88) 35%, 
+        rgba(10, 15, 25, 0.94) 50%, 
+        rgba(5, 8, 14, 0.98) 100%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+    }
+
+    /* Vista Start Orb */
+    .vista-orb {
+      width: 48px;
+      height: 48px;
+      position: absolute;
+      top: -6px;
+      left: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #5ce4ff 0%, #008cd4 35%, #004b99 70%, #022652 100%);
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 170, 255, 0.8), inset 0 2px 5px rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .vista-orb::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 8px;
+      right: 8px;
+      height: 18px;
+      border-radius: 50% 50% 40% 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.05) 100%);
+      pointer-events: none;
+    }
+    .vista-orb:hover {
+      transform: scale(1.08);
+      box-shadow: 0 2px 18px rgba(0, 200, 255, 0.9), 0 0 24px rgba(70, 210, 255, 1), inset 0 2px 7px #fff;
+    }
+
+    /* Desktop Icons */
+    .desktop-icon {
+      width: 82px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .desktop-icon:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .desktop-icon:active, .desktop-icon.selected {
+      background: rgba(90, 170, 255, 0.28);
+      border: 1px solid rgba(130, 210, 255, 0.7);
+    }
+    .desktop-icon span {
+      text-shadow: 0 1px 3px #000, 0 2px 6px rgba(0,0,0,0.9);
+      color: #fff;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.25;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+
+    /* Taskbar Window Tab */
+    .taskbar-tab {
+      height: 32px;
+      max-width: 175px;
+      min-width: 120px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(60,80,105,0.3) 50%, rgba(20,35,50,0.5) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #e2e8f0;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.15s ease;
+    }
+    .taskbar-tab:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(90,135,185,0.45) 50%, rgba(30,65,100,0.7) 100%);
+      border-color: rgba(140, 210, 255, 0.6);
+      color: #fff;
+    }
+    .taskbar-tab.active {
+      background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(70,140,210,0.6) 50%, rgba(20,70,125,0.85) 100%);
+      border-color: rgba(180, 230, 255, 0.8);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 0 10px rgba(0, 160, 255, 0.4);
+    }
+
+    /* Vista Sidebar Gadgets */
+    .vista-gadget {
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(20,35,55,0.55) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    /* Start Menu Glass */
+    .vista-start-menu {
+      position: absolute;
+      bottom: 48px;
+      left: 10px;
+      width: 420px;
+      max-width: 95vw;
+      background: rgba(15, 25, 40, 0.92);
+      backdrop-filter: blur(35px);
+      -webkit-backdrop-filter: blur(35px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.8), 0 0 0 1px rgba(0, 150, 255, 0.3);
+      z-index: 10000;
+    }
+
+    /* Wallpaper Canvas Background */
+    #wallpaper-stage {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 0.5s ease-in-out, filter 0.5s ease;
+      z-index: 0;
+    }
+
+    /* Custom Aero Scrollbars */
+    ::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(220, 230, 240, 0.6);
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #9bc2e6 0%, #4682b4 100%);
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #6ba5d8 0%, #296499 100%);
+    }
+
+    /* Lenis Smooth Scroll Container */
+    .window-scroll-body {
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+    }
+
+    /* Shine effect */
+    .glass-reflection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+      border-radius: 8px 8px 0 0;
+    }
+
+    /* Selectable text inside window content */
+    .window-scroll-body * {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+  </style>
+</head>
+<body class="overflow-hidden">
+
+  <!-- ==========================================
+       DESKTOP WALLPAPER CANVAS
+       ========================================== -->
+  <div id="wallpaper-stage" class="absolute inset-0"></div>
+  
+  <!-- Subtle Aurora overlay on desktop for that signature Vista vibe -->
+  <div class="absolute inset-0 bg-gradient-to-tr from-sky-900/35 via-teal-900/15 to-transparent pointer-events-none z-[1]"></div>
+
+  <!-- ==========================================
+       DESKTOP WORKSPACE (Icons & Windows)
+       ========================================== -->
+  <main id="desktop-workspace" class="relative w-full h-[calc(100vh-44px)] p-4 z-10 overflow-hidden">
+    
+    <!-- Desktop Icons Column -->
+    <div id="icons-container" class="flex flex-col flex-wrap gap-2.5 h-full max-h-[calc(100vh-60px)] w-fit content-start z-10 pointer-events-auto">
+      
+      <!-- Icon 1: Profile / About -->
+      <div class="desktop-icon group" data-open-window="win-profile" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-sky-300 to-blue-600 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <span>Profile &amp; About</span>
+      </div>
+
+      <!-- Icon 2: Technical Arsenal / Skills -->
+      <div class="desktop-icon group" data-open-window="win-skills" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-amber-300 to-orange-600 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <span>Technical Arsenal</span>
+      </div>
+
+      <!-- Icon 3: Productions / Projects -->
+      <div class="desktop-icon group" data-open-window="win-projects" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-purple-300 to-indigo-700 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+        <span>Featured Productions</span>
+      </div>
+
+      <!-- Icon 4: Career Timeline / Journey -->
+      <div class="desktop-icon group" data-open-window="win-timeline" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-emerald-300 to-teal-700 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <span>Career Timeline</span>
+      </div>
+
+      <!-- Icon 5: Official Resume Dossier -->
+      <div class="desktop-icon group" data-open-window="win-resume" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-rose-300 to-red-600 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <span>Resume Dossier</span>
+      </div>
+
+      <!-- Icon 6: Instagram Direct App -->
+      <div class="desktop-icon group" id="icon-instagram" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-7 h-7 text-white fill-current filter drop-shadow" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </div>
+        <span>Instagram</span>
+      </div>
+
+      <!-- Icon 7: Wallpaper Personalization -->
+      <div class="desktop-icon group" data-open-window="win-wallpaper" tabindex="0">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-b from-cyan-300 to-teal-600 shadow-lg p-1.5 border border-white/50 group-hover:scale-105 transition-transform">
+          <svg class="w-full h-full text-white filter drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <span>Personalize</span>
+      </div>
+
+    </div>
+
+    <!-- Vista Sidebar Gadgets (Desktop right side) -->
+    <aside class="hidden xl:flex flex-col gap-4 absolute top-4 right-4 w-64 pointer-events-auto z-10">
+      
+      <!-- Clock Gadget -->
+      <div class="vista-gadget p-3.5 text-white flex items-center gap-3">
+        <div class="relative w-16 h-16 rounded-full border-2 border-white/60 bg-sky-950/60 shadow-inner flex items-center justify-center">
+          <div id="analog-hour" class="absolute w-0.5 h-4 bg-white top-4 origin-bottom transform rotate-45"></div>
+          <div id="analog-minute" class="absolute w-0.5 h-6 bg-sky-300 top-2 origin-bottom transform rotate-90"></div>
+          <div id="analog-second" class="absolute w-0.5 h-6 bg-amber-400 top-2 origin-bottom"></div>
+          <div class="w-2 h-2 rounded-full bg-white z-10 shadow"></div>
+        </div>
+        <div>
+          <div id="gadget-digital-clock" class="text-base font-bold tracking-wide font-mono">12:00:00 PM</div>
+          <div id="gadget-date" class="text-[11px] text-sky-200">Windows Vista Aero</div>
+          <div class="text-[10px] text-white/70">Candidate: Siva Chandiran</div>
+        </div>
+      </div>
+
+      <!-- System Health Meter Gadget -->
+      <div class="vista-gadget p-3 text-white space-y-2">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Engineering Vigor
+          </span>
+          <span class="text-emerald-300 text-[11px]">B.E. IT 2026</span>
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] text-gray-200 mb-1">
+            <span>FastAPI / Python Runtime</span>
+            <span class="text-amber-300">99.8%</span>
+          </div>
+          <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden border border-white/20">
+            <div class="bg-gradient-to-r from-emerald-400 to-amber-400 h-full w-[96%]"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] text-gray-200 mb-1">
+            <span>Web3 / Solidity Contract State</span>
+            <span class="text-sky-300">Mined</span>
+          </div>
+          <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden border border-white/20">
+            <div class="bg-gradient-to-r from-sky-400 to-purple-400 h-full w-[92%]"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Note Gadget -->
+      <div class="vista-gadget p-3 bg-amber-200/90 text-slate-900 shadow-xl border-amber-300">
+        <div class="text-xs font-bold border-b border-amber-400/50 pb-1 flex justify-between items-center">
+          <span>Sticky Note: Recruiter Memo</span>
+          <span class="text-[10px] text-amber-900 font-mono">Open for Hire</span>
+        </div>
+        <p class="text-[11px] mt-1.5 leading-snug">
+          "Double-click any desktop icon to launch dedicated Vista windows. Siva is skilled in <strong>FastAPI</strong>, <strong>React</strong>, <strong>SQL</strong> and <strong>Web3</strong>."
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- =================================================================
+         MODULAR VISTA WINDOWS
+         Each window contains ONLY its specific information.
+         ================================================================= -->
+
+    <!-- ==========================================
+         WINDOW 1: PROFILE & ABOUT ME
+         ========================================== -->
+    <div id="win-profile" class="vista-window hidden" style="width: 740px; height: 520px; top: 40px; left: 130px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>About Me — Siva Chandiran R (B.E. IT 2026)</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-profile" title="Minimize">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-profile" title="Maximize">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-profile" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- Vista Address & Command Toolbar -->
+      <div class="bg-gradient-to-b from-[#e6effa] to-[#d4e3f5] border-b border-[#a8c2e0] px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700">
+        <span class="font-semibold text-slate-600">Location:</span>
+        <div class="flex-1 bg-white border border-[#a0b8d5] rounded px-2.5 py-0.5 text-[11px] font-mono text-slate-800 shadow-inner flex items-center justify-between">
+          <span>C:\Users\SivaChandiran\Profile\About.exe</span>
+          <span class="text-emerald-600 font-semibold text-[10px]">VERIFIED CANDIDATE</span>
+        </div>
+      </div>
+
+      <!-- Window Scroll Body with Lenis -->
+      <div class="window-scroll-body flex-1 p-5 bg-[#f8fafc] text-slate-800 space-y-6">
+        
+        <!-- Header Info Card -->
+        <div class="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50/70 border border-sky-200 shadow-sm">
+          <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sky-600 via-blue-600 to-indigo-800 text-white font-display font-extrabold flex items-center justify-center text-3xl shadow-md border-2 border-white shrink-0">
+            SC
+          </div>
+          <div class="text-center sm:text-left space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Open to Full-Stack Developer Roles
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 font-display">SIVA CHANDIRAN R</h1>
+            <p class="text-sm font-semibold text-sky-700">Full Stack Developer (Python) • FastAPI • Blockchain &amp; Web3</p>
+            <p class="text-xs text-slate-600">B.E. Information Technology (2022–2026) | Annamalai University | CGPA: 7.82 / 10.0</p>
+          </div>
+        </div>
+
+        <!-- Narrative Bio -->
+        <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
+          <h3 class="font-bold text-slate-900 text-base border-b border-slate-200 pb-1 flex items-center gap-2">
+            <span>Executive Bio</span>
+          </h3>
+          <p>
+            Python Full-Stack trained Information Technology graduate with hands-on experience architecting high-speed asynchronous REST APIs with <strong>FastAPI</strong>, SQL-backed enterprise workflows, and tamper-resistant decentralized applications powered by <strong>Solidity, Ethereum, Web3.js, and React</strong>.
+          </p>
+          <p>
+            Passionate about building performant, cleanly architected backends and rich frontend interfaces with attention to real-world security and UX excellence.
+          </p>
+        </div>
+
+        <!-- Quick Credentials Matrix -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm text-center">
+            <div class="text-xl font-bold text-sky-700 font-display">7.82</div>
+            <div class="text-[11px] text-slate-500">CGPA / 10.0</div>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm text-center">
+            <div class="text-xl font-bold text-emerald-600 font-display">FastAPI</div>
+            <div class="text-[11px] text-slate-500">Python + SQL</div>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm text-center">
+            <div class="text-xl font-bold text-purple-600 font-display">Web3</div>
+            <div class="text-[11px] text-slate-500">Solidity DApps</div>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm text-center">
+            <div class="text-xl font-bold text-amber-600 font-display">2x IIT</div>
+            <div class="text-[11px] text-slate-500">NPTEL Certs</div>
+          </div>
+        </div>
+
+        <!-- Direct Recruiter Contact Strip -->
+        <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono text-sky-400">
+            <span>CONTACT CHANNELS</span>
+            <span>Chennai / Tamil Nadu, India</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-2.5 rounded bg-white/10 flex items-center justify-between">
+              <span>📧 sivachandiran30@gmail.com</span>
+              <button class="text-amber-300 hover:underline copy-btn" data-copy="sivachandiran30@gmail.com">Copy</button>
+            </div>
+            <div class="p-2.5 rounded bg-white/10 flex items-center justify-between">
+              <span>📱 +91 8940319212</span>
+              <button class="text-amber-300 hover:underline copy-btn" data-copy="+918940319212">Copy</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span>Ready • Object 1 of 1 selected</span>
+        <span>Windows Vista Aero Edition</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         WINDOW 2: TECHNICAL ARSENAL (SKILLS)
+         ========================================== -->
+    <div id="win-skills" class="vista-window hidden" style="width: 820px; height: 560px; top: 60px; left: 180px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span>Technical Arsenal — Skills &amp; Architecture Matrix</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-skills">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-skills">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-skills">✕</button>
+        </div>
+      </div>
+
+      <!-- Command Bar with Category Filter -->
+      <div class="bg-gradient-to-b from-[#eaf2fb] to-[#d6e5f7] border-b border-[#a8c4e3] px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-slate-700">Filter By Domain:</span>
+          <button class="skill-filter-btn px-2.5 py-1 rounded bg-sky-600 text-white font-medium shadow-sm" data-filter="all">All (11)</button>
+          <button class="skill-filter-btn px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300" data-filter="Languages">Languages</button>
+          <button class="skill-filter-btn px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300" data-filter="Backend">Backend &amp; DB</button>
+          <button class="skill-filter-btn px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300" data-filter="Frontend">Frontend</button>
+          <button class="skill-filter-btn px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300" data-filter="Web3">Web3 &amp; Tools</button>
+        </div>
+      </div>
+
+      <!-- Window Scroll Body with Split Explorer View -->
+      <div class="window-scroll-body flex-1 p-4 bg-[#f8fafc] text-slate-800">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Skills Grid (Left 7 cols) -->
+          <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="skills-list-container">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Live Code & Usage Inspector (Right 5 cols) -->
+          <div class="lg:col-span-5 bg-slate-900 rounded-xl p-4 text-white flex flex-col justify-between border border-slate-700 shadow-inner">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                <div>
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20" id="skill-ins-badge">Backend &amp; API</span>
+                  <h4 class="text-base font-bold text-white mt-1" id="skill-ins-title">FastAPI &amp; Python</h4>
+                </div>
+                <span class="text-[11px] font-mono text-emerald-400" id="skill-ins-project">Bespoke CRM</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed" id="skill-ins-desc">
+                Architecting high-performance asynchronous REST endpoints, Pydantic validation models, and transactional SQL data layers.
+              </p>
+              
+              <div class="rounded-lg bg-black/80 p-3 border border-slate-800">
+                <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
+                  <span id="skill-ins-file">main.py</span>
+                  <button class="text-sky-400 hover:underline copy-btn" id="btn-copy-skill-code">Copy</button>
+                </div>
+                <pre class="text-[11px] font-mono text-emerald-300 overflow-x-auto leading-relaxed"><code id="skill-ins-code">from fastapi import FastAPI, Depends
+app = FastAPI(title="Bespoke CRM")
+
+@app.post("/customers")
+def create_customer(data: CustomerSchema):
+    return {"status": "saved", "id": 101}</code></pre>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 pt-2 border-t border-slate-800 flex justify-between">
+              <span>Status: Production Tested</span>
+              <span>Python 3.11+</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span id="skills-count-status">11 Technologies loaded</span>
+        <span>Click card to inspect code snippet</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         WINDOW 3: FEATURED PRODUCTIONS (PROJECTS)
+         ========================================== -->
+    <div id="win-projects" class="vista-window hidden" style="width: 860px; height: 580px; top: 70px; left: 220px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <span>Featured Productions — Interactive Sandbox Applications</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-projects">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-projects">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-projects">✕</button>
+        </div>
+      </div>
+
+      <!-- Vista Address Bar -->
+      <div class="bg-gradient-to-b from-[#eaf2fb] to-[#d6e5f7] border-b border-[#a8c4e3] px-3 py-1.5 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-700">Repositories:</span>
+          <a href="https://github.com/Diya-tec" target="_blank" rel="noopener noreferrer" class="text-sky-700 font-semibold hover:underline flex items-center gap-1">
+            <span>github.com/Diya-tec</span>
+            <span class="text-[10px]">↗</span>
+          </a>
+        </div>
+        <span class="text-[11px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 font-medium">Both Sandboxes Live</span>
+      </div>
+
+      <!-- Window Scroll Body -->
+      <div class="window-scroll-body flex-1 p-5 bg-[#f8fafc] text-slate-800 space-y-6">
+        
+        <!-- PROJECT 1: BESPOKE TAILOR CRM -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-100 text-amber-800 font-semibold border border-amber-300">PRODUCTION 01</span>
+                <span class="text-xs font-mono text-slate-500">FastAPI • Python • SQL</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mt-1">Bespoke Tailor CRM</h3>
+            </div>
+            <a href="https://github.com/Diya-tec/bespoke-tailor-crm-fastapi" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-mono hover:bg-slate-800 transition flex items-center gap-1.5 self-start">
+              <span>View GitHub Repo</span>
+              <span>↗</span>
+            </a>
+          </div>
+
+          <p class="text-sm text-slate-700 leading-relaxed">
+            Built an end-to-end customer relationship and production tracking application for a custom tailoring house. Designed RESTful API endpoints in <strong>FastAPI</strong> backed by <strong>SQL database</strong> schema to manage client measurements, cloth inventory, and garment workflow stages.
+          </p>
+
+          <!-- Interactive CRM API Sandbox -->
+          <div class="p-4 rounded-xl bg-slate-950 text-white space-y-3">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-emerald-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                FastAPI Uvicorn Live Endpoint Simulator
+              </span>
+              <span id="crm-record-count-ui" class="text-slate-400">3 Records Loaded</span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button class="p-2 rounded bg-sky-900/60 hover:bg-sky-800 text-left border border-sky-600/40 transition" id="btn-crm-get-vista">
+                <div class="text-[10px] font-mono font-bold text-sky-300">GET /api/v1/customers</div>
+                <div class="text-[11px] text-slate-200">Fetch Active SQL Roster</div>
+              </button>
+              <button class="p-2 rounded bg-emerald-900/60 hover:bg-emerald-800 text-left border border-emerald-600/40 transition" id="btn-crm-post-vista">
+                <div class="text-[10px] font-mono font-bold text-emerald-300">POST /api/v1/orders</div>
+                <div class="text-[11px] text-slate-200">+ New Tailored Suit</div>
+              </button>
+              <button class="p-2 rounded bg-amber-900/60 hover:bg-amber-800 text-left border border-amber-600/40 transition" id="btn-crm-patch-vista">
+                <div class="text-[10px] font-mono font-bold text-amber-300">PATCH /api/v1/workflow</div>
+                <div class="text-[11px] text-slate-200">Advance Fitting Stage</div>
+              </button>
+            </div>
+
+            <!-- Table Output -->
+            <div class="rounded bg-black/60 p-3 border border-slate-800 space-y-1.5 max-h-36 overflow-y-auto text-xs font-mono" id="crm-table-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PROJECT 2: DECENTRALIZED E-VOTING SYSTEM -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-100 text-purple-800 font-semibold border border-purple-300">PRODUCTION 02</span>
+                <span class="text-xs font-mono text-slate-500">Solidity • Ethereum • Web3.js • React</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mt-1">Decentralized E-Voting System</h3>
+            </div>
+            <a href="https://github.com/Diya-tec" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-purple-700 text-white text-xs font-mono hover:bg-purple-600 transition flex items-center gap-1.5 self-start">
+              <span>GitHub Account</span>
+              <span>↗</span>
+            </a>
+          </div>
+
+          <p class="text-sm text-slate-700 leading-relaxed">
+            Developed a secure decentralized voting platform leveraging <strong>Solidity smart contracts</strong> on Ethereum to enforce tamper-proof electoral rules. Integrated a responsive <strong>React</strong> interface with the contract via <strong>Web3.js</strong> for zero-trust cryptographic tallying.
+          </p>
+
+          <!-- Interactive Web3 Voting Sandbox -->
+          <div class="p-4 rounded-xl bg-slate-950 text-white space-y-3">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-purple-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                Web3.js Simulated EVM Contract
+              </span>
+              <span class="text-slate-400">Wallet: 0x71C...9A2B (Connected)</span>
+            </div>
+
+            <!-- Vote Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button class="vote-action-btn p-2.5 rounded bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/40 text-left transition" data-candidate="0">
+                <div class="text-[10px] font-mono text-purple-300">CANDIDATE 01</div>
+                <div class="font-bold text-xs text-white">Protocol Alpha</div>
+                <div class="text-[11px] font-mono text-emerald-400 mt-1" id="v-count-0">142 Votes</div>
+              </button>
+              <button class="vote-action-btn p-2.5 rounded bg-sky-900/40 hover:bg-sky-800/60 border border-sky-500/40 text-left transition" data-candidate="1">
+                <div class="text-[10px] font-mono text-sky-300">CANDIDATE 02</div>
+                <div class="font-bold text-xs text-white">ZK Privacy Grid</div>
+                <div class="text-[11px] font-mono text-emerald-400 mt-1" id="v-count-1">118 Votes</div>
+              </button>
+              <button class="vote-action-btn p-2.5 rounded bg-amber-900/40 hover:bg-amber-800/60 border border-amber-500/40 text-left transition" data-candidate="2">
+                <div class="text-[10px] font-mono text-amber-300">CANDIDATE 03</div>
+                <div class="font-bold text-xs text-white">Open Ledger DAO</div>
+                <div class="text-[11px] font-mono text-emerald-400 mt-1" id="v-count-2">96 Votes</div>
+              </button>
+            </div>
+
+            <!-- Receipt Terminal -->
+            <div class="rounded bg-black/60 p-3 border border-slate-800 font-mono text-[11px] text-slate-300 space-y-1" id="web3-log-vista">
+              <div><span class="text-purple-400">[GENESIS #1948201]</span> Contract deployed: Election.sol</div>
+              <div><span class="text-emerald-400">[INSTRUCTION]</span> Click any candidate button to sign and mine a vote.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span>2 Production items available</span>
+        <span>Interactive simulators functional</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         WINDOW 4: CAREER TIMELINE / JOURNEY ONLY
+         ========================================== -->
+    <div id="win-timeline" class="vista-window hidden" style="width: 760px; height: 550px; top: 50px; left: 160px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Career Timeline &amp; Journey — Chronological Milestones</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-timeline">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-timeline">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-timeline">✕</button>
+        </div>
+      </div>
+
+      <!-- Vista Address Bar -->
+      <div class="bg-gradient-to-b from-[#eaf2fb] to-[#d6e5f7] border-b border-[#a8c4e3] px-3 py-1.5 flex items-center justify-between text-xs">
+        <div class="font-bold text-slate-700">Timeline Scope: 2022 — Present (2026)</div>
+        <span class="text-[11px] font-mono text-slate-600">4 Major Milestones</span>
+      </div>
+
+      <!-- Window Scroll Body (Shows ONLY Career Timeline & Credentials) -->
+      <div class="window-scroll-body flex-1 p-6 bg-[#f8fafc] text-slate-800 space-y-6">
+        
+        <div class="border-l-2 border-sky-400 pl-6 ml-2 space-y-8 relative">
+          
+          <!-- Milestone 1: Internship -->
+          <div class="relative">
+            <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-amber-500 border-2 border-white shadow"></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-100 text-amber-800 font-bold border border-amber-300">INDUSTRY INTERNSHIP</span>
+                <span class="text-xs font-mono text-slate-500">Chennai, India</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Blockchain Developer Intern</h3>
+              <div class="text-xs font-semibold text-amber-700">Esteem E-Technologies</div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Worked on decentralized smart contract development workflows and immersive <strong>Unreal Engine</strong> interactive projects as part of the specialized engineering internship program.
+              </p>
+            </div>
+          </div>
+
+          <!-- Milestone 2: Training -->
+          <div class="relative">
+            <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-sky-500 border-2 border-white shadow"></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-100 text-sky-800 font-bold border border-sky-300">PROFESSIONAL ACCREDITATION</span>
+                <span class="text-xs font-mono text-slate-500">2026</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Python Full-Stack Training</h3>
+              <div class="text-xs font-semibold text-sky-700">Accord Info Matric</div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Extensive technical training covering core &amp; advanced <strong>Python</strong>, modern responsive web design principles, RESTful microservices, and practical <strong>AI developer tools</strong> workflows.
+              </p>
+            </div>
+          </div>
+
+          <!-- Milestone 3: B.E. Degree -->
+          <div class="relative">
+            <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow"></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">BACHELOR OF ENGINEERING (2022 – 2026)</span>
+                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">CGPA: 7.82 / 10.0</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">B.E. in Information Technology</h3>
+              <div class="text-xs font-semibold text-emerald-700">Annamalai University</div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Rigorous four-year curriculum covering Data Structures, Algorithms, Relational Database Management Systems (DBMS), SQL, Computer Networks, and Deep Learning basics.
+              </p>
+            </div>
+          </div>
+
+          <!-- Milestone 4: Certifications -->
+          <div class="relative">
+            <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-purple-500 border-2 border-white shadow"></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-100 text-purple-800 font-bold border border-purple-300">IIT / SWAYAM NPTEL</span>
+                <span class="text-xs font-mono text-purple-700 font-medium">Verified Credentials</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div class="font-bold text-slate-800">1. Social Networks</div>
+                  <div class="text-[11px] text-slate-500">Graph Theory &amp; Link Prediction (IIT)</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div class="font-bold text-slate-800">2. Industry 4.0 &amp; IIoT</div>
+                  <div class="text-[11px] text-slate-500">Industrial IoT &amp; Automation (IIT)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span>Timeline entries verified</span>
+        <span>Annamalai University • 2026</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         WINDOW 5: OFFICIAL RESUME DOSSIER
+         ========================================== -->
+    <div id="win-resume" class="vista-window hidden" style="width: 780px; height: 560px; top: 45px; left: 150px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>Resume Dossier — Siva Chandiran R</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-resume">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-resume">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-resume">✕</button>
+        </div>
+      </div>
+
+      <!-- Toolbar with Print & Export -->
+      <div class="bg-gradient-to-b from-[#eaf2fb] to-[#d6e5f7] border-b border-[#a8c4e3] px-3 py-1.5 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 rounded bg-slate-900 text-white font-medium text-[11px] hover:bg-slate-800 transition shadow" id="btn-print-doc">
+            🖨️ Print / Save PDF
+          </button>
+          <button class="px-3 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-medium text-[11px] copy-btn" data-copy="Siva Chandiran R - Full Stack Python Developer | sivachandiran30@gmail.com | +91 8940319212 | GitHub: https://github.com/Diya-tec">
+            📋 Copy Plaintext Summary
+          </button>
+        </div>
+        <span class="text-[11px] text-slate-500 font-mono">Status: Formatted Dossier</span>
+      </div>
+
+      <!-- Window Scroll Body (Clean Resume Sheet) -->
+      <div class="window-scroll-body flex-1 p-6 bg-white text-slate-800 space-y-5">
+        
+        <div class="border-b border-slate-300 pb-4 text-center sm:text-left">
+          <h1 class="text-3xl font-extrabold text-slate-900 font-display">SIVA CHANDIRAN R</h1>
+          <p class="text-sm font-semibold text-sky-800 mt-0.5">Full Stack Developer (Python) • Web3 Application Engineer</p>
+          <p class="text-xs text-slate-600 mt-1">
+            sivachandiran30@gmail.com • +91 8940319212 • Chennai, Tamil Nadu, India
+          </p>
+          <div class="flex flex-wrap gap-3 text-xs font-mono text-sky-700 mt-2">
+            <a href="https://linkedin.com/in/sivachandiranr30" target="_blank" class="hover:underline">LinkedIn: /in/sivachandiranr30 ↗</a>
+            <a href="https://github.com/Diya-tec" target="_blank" class="hover:underline">GitHub: /Diya-tec ↗</a>
+            <a href="https://www.instagram.com/santasanta9675?dlrf=dHF2MHZyMXh1OWh0" target="_blank" class="hover:underline text-rose-600">Instagram: @santasanta9675 ↗</a>
+          </div>
+        </div>
+
+        <div class="space-y-4 text-xs sm:text-sm">
+          <div>
+            <h3 class="font-bold text-slate-900 uppercase tracking-wider text-xs border-b border-slate-200 pb-1 mb-1.5 text-sky-900">Professional Summary</h3>
+            <p class="text-slate-700 leading-relaxed">
+              Python Full-Stack trained Information Technology graduate (B.E., 2026) with hands-on experience building REST APIs with FastAPI, SQL-backed web applications, and blockchain-based apps using Solidity, Ethereum, and Web3.js. Seeking a full stack developer role to build clean, scalable, and user-focused web applications.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-bold text-slate-900 uppercase tracking-wider text-xs border-b border-slate-200 pb-1 mb-1.5 text-sky-900">Technical Arsenal</h3>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li><strong>Languages:</strong> Python, SQL, JavaScript, HTML5, CSS3</li>
+              <li><strong>Backend:</strong> FastAPI, Python REST APIs, Pydantic validation</li>
+              <li><strong>Databases:</strong> Relational SQL, DBMS design, indexing &amp; schema architecture</li>
+              <li><strong>Frontend:</strong> React, HTML, CSS, JavaScript, responsive web designing</li>
+              <li><strong>Blockchain &amp; Tools:</strong> Solidity, Ethereum, Web3.js, Git, GitHub, AI Tools, Unreal Engine</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-bold text-slate-900 uppercase tracking-wider text-xs border-b border-slate-200 pb-1 mb-1.5 text-sky-900">Key Projects</h3>
+            <div class="space-y-2 text-slate-700">
+              <div>
+                <div class="font-bold text-slate-900">Bespoke Tailor CRM | FastAPI, Python, SQL</div>
+                <p>Designed and built a complete CRM web app for bespoke tailoring workflows with FastAPI REST APIs managing client measurements and fitting stages.</p>
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">Decentralized E-Voting System | Solidity, Ethereum, Web3.js, React</div>
+                <p>Engineered an immutable blockchain voting platform on Ethereum ensuring cryptographically secure zero-tampering electoral processes.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <h3 class="font-bold text-slate-900 uppercase tracking-wider text-xs border-b border-slate-200 pb-1 mb-1.5 text-sky-900">Internship &amp; Training</h3>
+              <p class="font-semibold text-slate-900">Esteem E-Technologies — Blockchain Intern</p>
+              <p class="text-xs text-slate-600 mb-1">Blockchain &amp; Unreal Engine interactive systems.</p>
+              <p class="font-semibold text-slate-900">Accord Info Matric (2026)</p>
+              <p class="text-xs text-slate-600">Python full-stack and modern web design.</p>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 uppercase tracking-wider text-xs border-b border-slate-200 pb-1 mb-1.5 text-sky-900">Education &amp; Certs</h3>
+              <p class="font-semibold text-slate-900">B.E. Information Technology (2026)</p>
+              <p class="text-xs text-slate-600 mb-1">Annamalai University • CGPA: 7.82 / 10.0</p>
+              <p class="font-semibold text-slate-900">IIT / Swayam NPTEL</p>
+              <p class="text-xs text-slate-600">• Social Networks &bull; Industry 4.0 / IIoT</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span>Print-ready layout</span>
+        <span>Updated for 2026 Recruitment</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         WINDOW 6: REALISTIC WALLPAPER PERSONALIZATION
+         ========================================== -->
+    <div id="win-wallpaper" class="vista-window hidden" style="width: 720px; height: 500px; top: 60px; left: 190px;">
+      <div class="glass-reflection"></div>
+      
+      <!-- Aero Titlebar -->
+      <div class="aero-titlebar flex items-center justify-between px-3 select-none">
+        <div class="flex items-center gap-2 text-white font-medium text-xs drop-shadow">
+          <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Personalization — Desktop Background Control Panel</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="vista-btn vista-btn-min" data-win-min="win-wallpaper">−</button>
+          <button class="vista-btn vista-btn-max" data-win-max="win-wallpaper">□</button>
+          <button class="vista-btn vista-btn-close" data-win-close="win-wallpaper">✕</button>
+        </div>
+      </div>
+
+      <!-- Address / Path Bar -->
+      <div class="bg-gradient-to-b from-[#eaf2fb] to-[#d6e5f7] border-b border-[#a8c4e3] px-3 py-1.5 text-xs text-slate-700 flex items-center gap-2">
+        <span class="font-bold">Control Panel:</span>
+        <span>Appearance and Personalization &gt; Desktop Background</span>
+      </div>
+
+      <!-- Window Scroll Body -->
+      <div class="window-scroll-body flex-1 p-5 bg-[#f8fafc] text-slate-800 space-y-5">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">Choose your desktop background</h3>
+          <p class="text-xs text-slate-600 mt-0.5">Click any picture below to apply it immediately to the desktop screen, just like in real Windows Vista.</p>
+        </div>
+
+        <!-- Wallpaper Gallery Presets -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="wallpaper-presets-grid">
+          <!-- Preset 1: Iconic Vista Aurora -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border-2 border-sky-500 shadow-md cursor-pointer hover:scale-102 transition" data-wp-index="0">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Windows Vista Aurora</div>
+            <div class="text-[10px] text-sky-600 text-center font-mono">Default Classic</div>
+          </div>
+
+          <!-- Preset 2: Lush Grass Bliss -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition" data-wp-index="1">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Vista Bliss Meadow</div>
+            <div class="text-[10px] text-slate-500 text-center font-mono">Natural Light</div>
+          </div>
+
+          <!-- Preset 3: Dark Obsidian Aurora -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition" data-wp-index="2">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Dark Aurora Night</div>
+            <div class="text-[10px] text-slate-500 text-center font-mono">Deep Neon</div>
+          </div>
+
+          <!-- Preset 4: Cyberpunk Grid -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition" data-wp-index="3">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Geometric Horizon</div>
+            <div class="text-[10px] text-slate-500 text-center font-mono">Aero Synth</div>
+          </div>
+
+          <!-- Preset 5: Deep Space Nebula -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition" data-wp-index="4">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Cosmic Starlight</div>
+            <div class="text-[10px] text-slate-500 text-center font-mono">Deep Space</div>
+          </div>
+
+          <!-- Preset 6: Minimalist Pure Gradient -->
+          <div class="wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition" data-wp-index="5">
+            <div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="text-xs font-semibold text-slate-800 mt-2 text-center">Aero Flow Wave</div>
+            <div class="text-[10px] text-slate-500 text-center font-mono">Glass Fluid</div>
+          </div>
+        </div>
+
+        <!-- Custom Wallpaper URL Input or File Upload -->
+        <div class="p-3.5 rounded-xl bg-slate-100 border border-slate-300 space-y-2">
+          <div class="text-xs font-bold text-slate-800">Or use your own custom image URL or file:</div>
+          <div class="flex gap-2">
+            <input type="url" id="custom-wallpaper-input" placeholder="Paste image URL (https://...)" class="flex-1 px-3 py-1.5 rounded bg-white border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-sky-500" />
+            <button id="btn-apply-custom-wp" class="px-3.5 py-1.5 rounded bg-sky-700 text-white font-medium text-xs hover:bg-sky-600 transition">Apply URL</button>
+          </div>
+          <div class="flex items-center gap-2 pt-1 text-[11px] text-slate-600">
+            <span>Upload local image:</span>
+            <input type="file" id="local-wallpaper-file" accept="image/*" class="text-xs" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Window Status Bar -->
+      <div class="bg-[#dce6f2] border-t border-[#b9cfeb] px-3 py-1 flex items-center justify-between text-[11px] text-slate-600">
+        <span>Desktop picture changed instantly</span>
+        <span>Windows Vista Personalization</span>
+      </div>
+    </div>
+
+
+    <!-- ==========================================
+         START MENU MODAL (Vista Glass Popup)
+         ========================================== -->
+    <div id="vista-start-menu" class="vista-start-menu hidden overflow-hidden rounded-t-xl">
+      <div class="p-3 bg-gradient-to-r from-sky-900 to-slate-900 border-b border-white/20 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-sky-400 p-0.5 shadow">
+            <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs">
+              SC
+            </div>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">Siva Chandiran R</div>
+            <div class="text-[10px] text-sky-300 font-mono">B.E. IT '26 • Full Stack (Python)</div>
+          </div>
+        </div>
+        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">Windows Vista</span>
+      </div>
+
+      <div class="grid grid-cols-12 min-h-[300px]">
+        <!-- Left Column: Applications & Windows -->
+        <div class="col-span-7 p-2.5 space-y-1 bg-white/95 text-slate-800 text-xs">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">Quick Launch</div>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-profile">
+            <span class="text-sky-600">👤</span>
+            <span class="font-medium">Profile &amp; About</span>
+          </button>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-skills">
+            <span class="text-amber-600">⚡</span>
+            <span class="font-medium">Technical Arsenal</span>
+          </button>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-projects">
+            <span class="text-purple-600">🚀</span>
+            <span class="font-medium">Featured Productions</span>
+          </button>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-timeline">
+            <span class="text-emerald-600">🕒</span>
+            <span class="font-medium">Career Timeline</span>
+          </button>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-resume">
+            <span class="text-rose-600">📄</span>
+            <span class="font-medium">Resume Dossier</span>
+          </button>
+          <button class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-sky-100 text-left transition" data-start-open="win-wallpaper">
+            <span class="text-cyan-600">🎨</span>
+            <span class="font-medium">Change Wallpaper</span>
+          </button>
+        </div>
+
+        <!-- Right Column: Shortcuts & Socials -->
+        <div class="col-span-5 p-3 bg-gradient-to-b from-[#1b3452] to-[#0c1a2d] text-white text-xs space-y-2 border-l border-white/10">
+          <div class="text-[10px] font-mono text-sky-300">EXPLORE &amp; CONNECT</div>
+          <a href="https://github.com/Diya-tec" target="_blank" class="block p-1.5 rounded hover:bg-white/10 text-slate-200 hover:text-white transition">
+            🐙 GitHub (@Diya-tec)
+          </a>
+          <a href="https://linkedin.com/in/sivachandiranr30" target="_blank" class="block p-1.5 rounded hover:bg-white/10 text-slate-200 hover:text-white transition">
+            💼 LinkedIn Profile
+          </a>
+          <a href="https://www.instagram.com/santasanta9675?dlrf=dHF2MHZyMXh1OWh0" target="_blank" class="block p-1.5 rounded hover:bg-white/10 text-rose-300 hover:text-rose-200 font-semibold transition">
+            📸 Instagram ID
+          </a>
+          <a href="mailto:sivachandiran30@gmail.com" class="block p-1.5 rounded hover:bg-white/10 text-slate-200 hover:text-white transition">
+            ✉️ Email Siva
+          </a>
+        </div>
+      </div>
+
+      <div class="p-2 bg-gradient-to-r from-slate-900 to-sky-950 border-t border-white/15 flex items-center justify-between text-xs text-slate-300">
+        <span class="text-[11px] font-mono text-slate-400">Windows Vista Aero</span>
+        <button id="btn-start-refresh" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white text-[11px] transition">
+          🔄 Reload OS
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ==========================================
+       WINDOWS VISTA AERO TASKBAR
+       ========================================== -->
+  <footer class="vista-taskbar fixed bottom-0 left-0 right-0 flex items-center justify-between px-3">
+    
+    <!-- Left: Vista Start Orb Button -->
+    <div class="flex items-center gap-3">
+      <div id="vista-start-orb" class="vista-orb" title="Windows Vista Start">
+        <!-- Vista 4-Color Swirl Logo inside Orb -->
+        <svg class="w-6 h-6 transform -rotate-12" viewBox="0 0 100 100">
+          <path d="M12 44 C22 28, 44 26, 44 44 C44 54, 32 58, 20 54 Z" fill="#f25022"/>
+          <path d="M54 44 C54 26, 76 28, 86 44 C74 58, 62 54, 54 44 Z" fill="#7fba00"/>
+          <path d="M20 58 C32 62, 44 58, 44 68 C44 86, 22 84, 12 68 Z" fill="#00a4ef"/>
+          <path d="M54 68 C54 58, 66 62, 78 58 C86 74, 64 86, 54 68 Z" fill="#ffb900"/>
+        </svg>
+      </div>
+
+      <!-- Spacing for orb overlap -->
+      <div class="w-14"></div>
+
+      <!-- Open Windows Taskbar Buttons Container -->
+      <div id="taskbar-tabs-container" class="flex items-center gap-1.5 overflow-x-auto max-w-[50vw]">
+        <!-- Populated dynamically via JS when windows open -->
+      </div>
+    </div>
+
+    <!-- Right: Vista System Tray (Clock, Notification, Instagram, Wallpaper) -->
+    <div class="flex items-center gap-3 text-white text-xs select-none">
+      
+      <!-- Instagram Quick Icon in Tray -->
+      <a href="https://www.instagram.com/santasanta9675?dlrf=dHF2MHZyMXh1OWh0" target="_blank" rel="noopener noreferrer" class="hover:text-rose-400 transition" title="Open Siva's Instagram (@santasanta9675)">
+        <svg class="w-4 h-4 fill-current text-rose-300 hover:scale-110 transition" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      </a>
+
+      <!-- Quick Wallpaper Personalization Tray Icon -->
+      <button class="hover:text-cyan-300 transition" id="tray-btn-wallpaper" title="Desktop Wallpaper Settings">
+        🎨
+      </button>
+
+      <!-- Network Icon -->
+      <span title="Internet Connected (1000 Mbps)" class="text-[11px] cursor-pointer">📶</span>
+
+      <!-- Volume Icon -->
+      <span title="Volume: 100%" class="text-[11px] cursor-pointer">🔊</span>
+
+      <!-- System Digital Clock -->
+      <div class="border-l border-white/20 pl-3 text-right leading-none cursor-pointer" id="tray-clock-btn">
+        <div id="tray-time" class="font-semibold text-xs font-mono">12:00 PM</div>
+        <div id="tray-date" class="text-[9px] text-sky-200 mt-0.5">2026-10-24</div>
+      </div>
+
+      <!-- Show Desktop Bar (Aero Peek right edge) -->
+      <div id="tray-show-desktop" class="w-3 h-8 rounded-sm bg-white/20 hover:bg-white/40 border-l border-white/30 cursor-pointer ml-1" title="Show Desktop"></div>
+    </div>
+  </footer>
+
+  <!-- Toast Feedback in Vista Style -->
+  <div id="vista-toast" class="fixed top-5 right-5 z-[10001] pointer-events-none transition-all duration-300 opacity-0 transform translate-y-[-10px]">
+    <div class="px-4 py-2.5 rounded-lg bg-slate-900/90 text-white text-xs border border-sky-400/50 shadow-2xl backdrop-blur-md flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+      <span id="toast-text">System Notification</span>
+    </div>
+  </div>
+
+
+  <!-- =================================================================
+       CORE SYSTEM SCRIPT: GSAP, LENIS, WINDOW MANAGER & STATE
+       ================================================================= -->
+  <script>
+    // Register GSAP plugins
+    if (typeof gsap !== 'undefined' && typeof Draggable !== 'undefined') {
+      gsap.registerPlugin(Draggable);
+    }
+
+    // -------------------------------------------------------------
+    // 1. WALLPAPERS DATABASE & ENGINE
+    // -------------------------------------------------------------
+    const WALLPAPERS = [
+      { name: "Windows Vista Aurora", url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2000&q=85" },
+      { name: "Vista Bliss Meadow", url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=85" },
+      { name: "Dark Aurora Night", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=2000&q=85" },
+      { name: "Geometric Horizon", url: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=2000&q=85" },
+      { name: "Cosmic Starlight", url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=2000&q=85" },
+      { name: "Aero Flow Wave", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=85" }
+    ];
+
+    let currentWpIndex = 0;
+    const stage = document.getElementById('wallpaper-stage');
+
+    function applyWallpaper(url, name = "Custom") {
+      stage.style.backgroundImage = `url('${url}')`;
+      showToast(`Wallpaper applied: ${name}`);
+    }
+
+    // Initialize default Vista Aurora wallpaper
+    applyWallpaper(WALLPAPERS[0].url, WALLPAPERS[0].name);
+
+    // -------------------------------------------------------------
+    // 2. SKILLS DATABASE & MATRIX
+    // -------------------------------------------------------------
+    const SKILLS_DATA = [
+      { id: 'fastapi', name: 'FastAPI', cat: 'Backend', project: 'Bespoke CRM', desc: 'Asynchronous Python web framework for lightning-speed REST endpoints, Pydantic data modeling, and automatic OpenAPI schema.', file: 'main.py', code: `from fastapi import FastAPI, Depends\napp = FastAPI(title="Bespoke Tailor CRM API")\n\n@app.post("/api/v1/orders")\ndef create_order(order: OrderSchema):\n    return {"status": "created", "id": 104}` },
+      { id: 'python', name: 'Python', cat: 'Languages', project: 'Full-Stack Core', desc: 'Primary programming language for high-load backend services, algorithms, data analytics, and automation scripts.', file: 'analytics.py', code: `def compute_order_aggregates(orders: list) -> dict:\n    revenue = sum(o["price"] for o in orders)\n    return {"count": len(orders), "revenue": revenue}` },
+      { id: 'sql', name: 'SQL & DBMS', cat: 'Backend', project: 'Bespoke CRM', desc: 'Relational database schema modeling, queries, transactional safety, and foreign key relations.', file: 'schema.sql', code: `CREATE TABLE bespoke_orders (\n    id SERIAL PRIMARY KEY,\n    customer_id INT NOT NULL,\n    suit_type VARCHAR(100),\n    fitting_stage VARCHAR(50)\n);` },
+      { id: 'react', name: 'React', cat: 'Frontend', project: 'E-Voting DApp', desc: 'Component architecture, reactive state hooks, and Web3 metamask contract wallet bindings.', file: 'VotingApp.jsx', code: `export function VoterDashboard({ onCastVote }) {\n  return <button onClick={onCastVote}>Sign Vote On-Chain</button>;\n}` },
+      { id: 'solidity', name: 'Solidity & Ethereum', cat: 'Web3', project: 'E-Voting DApp', desc: 'Smart contract development on Ethereum ensuring immutable, decentralized, one-wallet-one-vote rules.', file: 'Election.sol', code: `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\ncontract DecentralizedElection {\n    mapping(address => bool) public hasVoted;\n    function vote(uint256 id) external {\n        require(!hasVoted[msg.sender], "Voted");\n        hasVoted[msg.sender] = true;\n    }\n}` },
+      { id: 'web3js', name: 'Web3.js', cat: 'Web3', project: 'E-Voting DApp', desc: 'Ethereum JavaScript API for interacting with local & testnet smart contracts and signing transactions.', file: 'web3Provider.js', code: `const web3 = new Web3(window.ethereum);\nawait web3.eth.requestAccounts();` },
+      { id: 'js', name: 'JavaScript (ES6+)', cat: 'Languages', project: 'Frontend & Full-Stack', desc: 'Modern async/await paradigms, DOM events, UI animations, and web app reactivity.', file: 'app.js', code: `const res = await fetch('/api/v1/customers');\nconst data = await res.json();` },
+      { id: 'html_css', name: 'HTML5 & CSS3', cat: 'Frontend', project: 'Web Designing', desc: 'Semantic layouts, CSS Grid, Flexbox, Glassmorphism, and responsive mobile adaptations.', file: 'style.css', code: `.aero-glass {\n  backdrop-filter: blur(20px);\n  background: rgba(255,255,255,0.2);\n}` },
+      { id: 'git_github', name: 'Git & GitHub', cat: 'Web3', project: '@Diya-tec', desc: 'Version control, feature branching, pull requests, and CI repository workflows.', file: 'git.sh', code: `git checkout -b feat/crm-fastapi\ngit commit -m "feat: complete tailor rest endpoints"` },
+      { id: 'ai_tools', name: 'AI Tools & DL Basics', cat: 'Web3', project: 'Accord Training', desc: 'Prompt engineering, code synthesis, LLM integration, and fundamental neural network activations.', file: 'ai_pipeline.py', code: `def sigmoid(x: float) -> float:\n    return 1.0 / (1.0 + math.exp(-x))` },
+      { id: 'unreal', name: 'Unreal Engine', cat: 'Web3', project: 'Esteem E-Technologies', desc: 'Interactive simulation systems and blockchain integration during the Esteem internship.', file: 'UnrealBridge.cpp', code: `// Unreal Engine simulation loop bridge` }
+    ];
+
+    let activeFilter = 'all';
+
+    function renderSkillsList() {
+      const container = document.getElementById('skills-list-container');
+      const filtered = activeFilter === 'all' 
+        ? SKILLS_DATA 
+        : SKILLS_DATA.filter(s => s.cat === activeFilter);
+
+      container.innerHTML = filtered.map(skill => `
+        <div class="skill-card p-3 rounded-xl bg-white hover:bg-sky-50/80 border border-slate-200 cursor-pointer transition shadow-sm" data-id="${skill.id}">
+          <div class="flex items-center justify-between text-[10px] font-mono">
+            <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">${skill.cat}</span>
+            <span class="text-sky-700 font-semibold">${skill.project}</span>
+          </div>
+          <div class="font-bold text-slate-900 text-sm mt-1.5">${skill.name}</div>
+          <div class="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">${skill.desc}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('skills-count-status').textContent = `${filtered.length} Technologies displayed`;
+
+      // Wire skill selection
+      container.querySelectorAll('.skill-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.getAttribute('data-id');
+          const skill = SKILLS_DATA.find(s => s.id === id);
+          if (skill) {
+            document.getElementById('skill-ins-badge').textContent = skill.cat;
+            document.getElementById('skill-ins-title').textContent = skill.name;
+            document.getElementById('skill-ins-project').textContent = skill.project;
+            document.getElementById('skill-ins-desc').textContent = skill.desc;
+            document.getElementById('skill-ins-file').textContent = skill.file;
+            document.getElementById('skill-ins-code').textContent = skill.code;
+            gsap.fromTo('#skill-ins-code', { opacity: 0.3, y: 5 }, { opacity: 1, y: 0, duration: 0.25 });
+          }
+        });
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 3. PROJECT SANDBOXES: FASTAPI CRM & SOLIDITY E-VOTING
+    // -------------------------------------------------------------
+    const crmItems = [
+      { id: "CRM-101", customer: "Aravind Natarajan", suit: "3-Piece Charcoal Tuxedo", stage: "FITTING_READY" },
+      { id: "CRM-102", customer: "Vikramaditya Rao", suit: "Raw Silk Bandhgala", stage: "STITCHING" },
+      { id: "CRM-103", customer: "Karthik Subramanian", suit: "Italian Linen Blazer", stage: "MEASURED" }
+    ];
+
+    function renderCrmTable() {
+      const container = document.getElementById('crm-table-container');
+      document.getElementById('crm-record-count-ui').textContent = `${crmItems.length} SQL Records Active`;
+      container.innerHTML = crmItems.map(item => `
+        <div class="flex items-center justify-between p-1.5 rounded bg-white/5 border border-white/5">
+          <div>
+            <span class="text-amber-300 font-semibold">${item.id}</span>
+            <span class="text-white ml-2">${item.customer}</span>
+            <span class="text-slate-400 block sm:inline sm:ml-2">(${item.suit})</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">${item.stage}</span>
+        </div>
+      `).join('');
+    }
+
+    // Web3 Tallies
+    const voteTallies = [142, 118, 96];
+    let blockNumber = 1948201;
+
+    function castVote(idx) {
+      voteTallies[idx] += 1;
+      blockNumber += 1;
+      document.getElementById(`v-count-${idx}`).textContent = `${voteTallies[idx]} Votes`;
+      const candNames = ["Protocol Alpha", "ZK Privacy Grid", "Open Ledger DAO"];
+      const hash = '0x' + Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      
+      const log = document.getElementById('web3-log-vista');
+      log.innerHTML = `
+        <div><span class="text-emerald-400">[MINED BLOCK #${blockNumber}]</span> Vote counted for <strong>${candNames[idx]}</strong></div>
+        <div><span class="text-purple-300">[TX HASH]</span> ${hash}...b72e &bull; Gas: 21,040</div>
+      `;
+      showToast(`Vote mined on Ethereum Block #${blockNumber}`);
+    }
+
+    // -------------------------------------------------------------
+    // 4. WINDOW MANAGER ENGINE (DRAG, RESIZE, MIN, MAX, ACTIVE)
+    // -------------------------------------------------------------
+    let highestZ = 100;
+    const openWindows = new Set();
+    const lenisInstances = {};
+
+    function bringToFront(win) {
+      highestZ += 1;
+      win.style.zIndex = highestZ;
+      document.querySelectorAll('.vista-window').forEach(w => w.classList.remove('active'));
+      win.classList.add('active');
+      updateTaskbarActiveTab(win.id);
+    }
+
+    function openWindow(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+
+      win.classList.remove('hidden');
+      bringToFront(win);
+      openWindows.add(winId);
+
+      // GSAP Aero Zoom In animation
+      gsap.fromTo(win, 
+        { scale: 0.88, opacity: 0, y: 20 }, 
+        { scale: 1, opacity: 1, y: 0, duration: 0.28, ease: "power2.out" }
+      );
+
+      // Create / activate Lenis inside the scroll viewport if not already
+      const scrollBody = win.querySelector('.window-scroll-body');
+      if (scrollBody && !lenisInstances[winId] && typeof Lenis !== 'undefined') {
+        lenisInstances[winId] = new Lenis({
+          wrapper: scrollBody,
+          content: scrollBody.firstElementChild,
+          duration: 0.8,
+          smoothWheel: true
+        });
+
+        function raf(time) {
+          if (lenisInstances[winId]) {
+            lenisInstances[winId].raf(time);
+            requestAnimationFrame(raf);
+          }
+        }
+        requestAnimationFrame(raf);
+      }
+
+      renderTaskbarTabs();
+    }
+
+    function closeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+
+      gsap.to(win, {
+        scale: 0.85,
+        opacity: 0,
+        y: 15,
+        duration: 0.2,
+        ease: "power2.in",
+        onComplete: () => {
+          win.classList.add('hidden');
+          openWindows.delete(winId);
+          renderTaskbarTabs();
+        }
+      });
+    }
+
+    function minimizeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+
+      gsap.to(win, {
+        y: 350,
+        scale: 0.4,
+        opacity: 0,
+        duration: 0.25,
+        ease: "power2.in",
+        onComplete: () => {
+          win.classList.add('hidden');
+          renderTaskbarTabs();
+        }
+      });
+    }
+
+    function maximizeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+
+      const isMax = win.getAttribute('data-maximized') === 'true';
+      if (!isMax) {
+        win.setAttribute('data-prev-top', win.style.top);
+        win.setAttribute('data-prev-left', win.style.left);
+        win.setAttribute('data-prev-width', win.style.width);
+        win.setAttribute('data-prev-height', win.style.height);
+
+        gsap.to(win, {
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: 'calc(100vh - 44px)',
+          duration: 0.2,
+          ease: "power1.out"
+        });
+        win.setAttribute('data-maximized', 'true');
+      } else {
+        gsap.to(win, {
+          top: win.getAttribute('data-prev-top'),
+          left: win.getAttribute('data-prev-left'),
+          width: win.getAttribute('data-prev-width'),
+          height: win.getAttribute('data-prev-height'),
+          duration: 0.2,
+          ease: "power1.out"
+        });
+        win.setAttribute('data-maximized', 'false');
+      }
+      bringToFront(win);
+    }
+
+    // -------------------------------------------------------------
+    // 5. TASKBAR TABS SYNCHRONIZATION
+    // -------------------------------------------------------------
+    const WIN_TITLES = {
+      'win-profile': { title: 'Profile & About', icon: '👤' },
+      'win-skills': { title: 'Technical Arsenal', icon: '⚡' },
+      'win-projects': { title: 'Productions', icon: '🚀' },
+      'win-timeline': { title: 'Career Timeline', icon: '🕒' },
+      'win-resume': { title: 'Resume Dossier', icon: '📄' },
+      'win-wallpaper': { title: 'Personalization', icon: '🎨' }
+    };
+
+    function renderTaskbarTabs() {
+      const container = document.getElementById('taskbar-tabs-container');
+      container.innerHTML = '';
+
+      openWindows.forEach(winId => {
+        const meta = WIN_TITLES[winId] || { title: winId, icon: '🪟' };
+        const win = document.getElementById(winId);
+        const isHidden = win.classList.contains('hidden');
+        const isActive = win.classList.contains('active') && !isHidden;
+
+        const tab = document.createElement('div');
+        tab.className = `taskbar-tab ${isActive ? 'active' : ''}`;
+        tab.innerHTML = `
+          <span>${meta.icon}</span>
+          <span class="truncate">${meta.title}</span>
+        `;
+        tab.addEventListener('click', () => {
+          if (isHidden) {
+            win.classList.remove('hidden');
+            gsap.fromTo(win, { scale: 0.8, opacity: 0, y: 100 }, { scale: 1, opacity: 1, y: 0, duration: 0.25 });
+            bringToFront(win);
+          } else if (win.classList.contains('active')) {
+            minimizeWindow(winId);
+          } else {
+            bringToFront(win);
+          }
+        });
+        container.appendChild(tab);
+      });
+    }
+
+    function updateTaskbarActiveTab(activeWinId) {
+      document.querySelectorAll('.taskbar-tab').forEach(tab => tab.classList.remove('active'));
+      renderTaskbarTabs();
+    }
+
+    // -------------------------------------------------------------
+    // 6. TOAST HELPER
+    // -------------------------------------------------------------
+    function showToast(msg) {
+      const toast = document.getElementById('vista-toast');
+      document.getElementById('toast-text').textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+      }, 2600);
+    }
+
+    // -------------------------------------------------------------
+    // 7. CLOCK ENGINE (Tray + Gadget)
+    // -------------------------------------------------------------
+    function updateClocks() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const dispHours = hours % 12 || 12;
+
+      const timeString = `${dispHours}:${minutes} ${ampm}`;
+      const fullDigital = `${dispHours}:${minutes}:${seconds} ${ampm}`;
+
+      document.getElementById('tray-time').textContent = timeString;
+      const dateString = now.toLocaleDateString('en-CA');
+      document.getElementById('tray-date').textContent = dateString;
+
+      const digitalGadget = document.getElementById('gadget-digital-clock');
+      if (digitalGadget) digitalGadget.textContent = fullDigital;
+
+      // Analog clock needles
+      const hrDeg = (hours % 12) * 30 + (now.getMinutes() / 2);
+      const minDeg = now.getMinutes() * 6;
+      const secDeg = now.getSeconds() * 6;
+
+      const hrEl = document.getElementById('analog-hour');
+      const minEl = document.getElementById('analog-minute');
+      const secEl = document.getElementById('analog-second');
+      if (hrEl) hrEl.style.transform = `rotate(${hrDeg}deg)`;
+      if (minEl) minEl.style.transform = `rotate(${minDeg}deg)`;
+      if (secEl) secEl.style.transform = `rotate(${secDeg}deg)`;
+    }
+    setInterval(updateClocks, 1000);
+    updateClocks();
+
+    // -------------------------------------------------------------
+    // 8. CLIPBOARD COPY ENGINE
+    // -------------------------------------------------------------
+    function copyText(txt) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => showToast(`Copied to clipboard: ${txt}`));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(`Copied: ${txt}`);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. WIRE APPLICATION LOGIC ON LOAD
+    // -------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSkillsList();
+      renderCrmTable();
+
+      // Mobile Responsive Adjustments
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        document.querySelectorAll('.vista-window').forEach(win => {
+          win.style.width = '96vw';
+          win.style.height = '82vh';
+          win.style.left = '2vw';
+          win.style.top = '10px';
+        });
+      }
+
+      // Initialize Draggables for Windows using GSAP
+      document.querySelectorAll('.vista-window').forEach(win => {
+        const handle = win.querySelector('.aero-titlebar');
+        if (typeof Draggable !== 'undefined' && !isMobile) {
+          Draggable.create(win, {
+            trigger: handle,
+            bounds: "#desktop-workspace",
+            edgeResistance: 0.65,
+            type: "x,y",
+            onPress: () => bringToFront(win)
+          });
+        }
+
+        win.addEventListener('mousedown', () => bringToFront(win));
+        win.addEventListener('touchstart', () => bringToFront(win));
+      });
+
+      // Desktop Icons: Double-click (or single click on touch) opens window
+      document.querySelectorAll('.desktop-icon[data-open-window]').forEach(icon => {
+        const targetId = icon.getAttribute('data-open-window');
+        
+        let lastTap = 0;
+        icon.addEventListener('click', () => {
+          document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+          icon.classList.add('selected');
+
+          // On mobile or single touch devices, open directly
+          if (isMobile) {
+            openWindow(targetId);
+          }
+        });
+
+        icon.addEventListener('dblclick', () => {
+          openWindow(targetId);
+        });
+
+        // Touch double tap handler
+        icon.addEventListener('touchend', (e) => {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+          if (tapLength < 350 && tapLength > 0) {
+            openWindow(targetId);
+            e.preventDefault();
+          }
+          lastTap = currentTime;
+        });
+      });
+
+      // Instagram Desktop Icon Direct Link
+      const instaIcon = document.getElementById('icon-instagram');
+      const instaUrl = "https://www.instagram.com/santasanta9675?dlrf=dHF2MHZyMXh1OWh0";
+      instaIcon.addEventListener('dblclick', () => window.open(instaUrl, '_blank'));
+      if (isMobile) {
+        instaIcon.addEventListener('click', () => window.open(instaUrl, '_blank'));
+      }
+
+      // Titlebar Window Controls (Close, Min, Max)
+      document.querySelectorAll('[data-win-close]').forEach(btn => {
+        btn.addEventListener('click', () => closeWindow(btn.getAttribute('data-win-close')));
+      });
+      document.querySelectorAll('[data-win-min]').forEach(btn => {
+        btn.addEventListener('click', () => minimizeWindow(btn.getAttribute('data-win-min')));
+      });
+      document.querySelectorAll('[data-win-max]').forEach(btn => {
+        btn.addEventListener('click', () => maximizeWindow(btn.getAttribute('data-win-max')));
+      });
+
+      // Start Orb & Start Menu
+      const startOrb = document.getElementById('vista-start-orb');
+      const startMenu = document.getElementById('vista-start-menu');
+      startOrb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startMenu.classList.toggle('hidden');
+        if (!startMenu.classList.contains('hidden')) {
+          gsap.fromTo(startMenu, { opacity: 0, y: 15, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.2 });
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!startMenu.contains(e.target) && !startOrb.contains(e.target)) {
+          startMenu.classList.add('hidden');
+        }
+      });
+
+      document.querySelectorAll('[data-start-open]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-start-open');
+          startMenu.classList.add('hidden');
+          openWindow(target);
+        });
+      });
+
+      document.getElementById('btn-start-refresh').addEventListener('click', () => {
+        window.location.reload();
+      });
+
+      // Skills Category Filter Buttons
+      document.querySelectorAll('.skill-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeFilter = btn.getAttribute('data-filter');
+          document.querySelectorAll('.skill-filter-btn').forEach(b => {
+            b.className = 'skill-filter-btn px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-300';
+          });
+          btn.className = 'skill-filter-btn px-2.5 py-1 rounded bg-sky-600 text-white font-medium shadow-sm';
+          renderSkillsList();
+        });
+      });
+
+      // CRM Sandbox Buttons
+      document.getElementById('btn-crm-get-vista').addEventListener('click', () => {
+        renderCrmTable();
+        showToast('Fetched active customer roster via FastAPI (HTTP 200)');
+      });
+      document.getElementById('btn-crm-post-vista').addEventListener('click', () => {
+        const names = ["Rohan Krishnamurthy", "Deepak Venkatesh", "Siddharth Menon"];
+        const suits = ["Velvet Dinner Jacket", "Double-Breasted Navy Suit", "Wedding Sherwani"];
+        const nextId = `CRM-${101 + crmItems.length}`;
+        const newRecord = {
+          id: nextId,
+          customer: names[crmItems.length % names.length],
+          suit: suits[crmItems.length % suits.length],
+          stage: "MEASURED"
+        };
+        crmItems.unshift(newRecord);
+        renderCrmTable();
+        showToast(`Created order ${nextId} via POST /api/v1/orders`);
+      });
+      document.getElementById('btn-crm-patch-vista').addEventListener('click', () => {
+        const stages = ["MEASURED", "CUTTING", "STITCHING", "FITTING_READY", "DELIVERED"];
+        crmItems.forEach(item => {
+          const idx = stages.indexOf(item.stage);
+          item.stage = stages[(idx + 1) % stages.length];
+        });
+        renderCrmTable();
+        showToast('Advanced tailoring workflow stages in SQL DB');
+      });
+
+      // Web3 Voting Buttons
+      document.querySelectorAll('.vote-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-candidate'), 10);
+          castVote(idx);
+        });
+      });
+
+      // Wallpaper Selection Presets
+      document.querySelectorAll('.wallpaper-thumb').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          const idx = parseInt(thumb.getAttribute('data-wp-index'), 10);
+          const wp = WALLPAPERS[idx];
+          if (wp) {
+            applyWallpaper(wp.url, wp.name);
+            document.querySelectorAll('.wallpaper-thumb').forEach(t => t.className = 'wallpaper-thumb p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:scale-102 transition');
+            thumb.className = 'wallpaper-thumb p-2 rounded-xl bg-white border-2 border-sky-500 shadow-md cursor-pointer hover:scale-102 transition';
+          }
+        });
+      });
+
+      // Custom Wallpaper URL
+      document.getElementById('btn-apply-custom-wp').addEventListener('click', () => {
+        const url = document.getElementById('custom-wallpaper-input').value.trim();
+        if (url) {
+          applyWallpaper(url, "Custom URL Wallpaper");
+        } else {
+          showToast("Please enter a valid image URL");
+        }
+      });
+
+      // Local Wallpaper File Upload
+      document.getElementById('local-wallpaper-file').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            applyWallpaper(event.target.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // System Tray Wallpaper Shortcut
+      document.getElementById('tray-btn-wallpaper').addEventListener('click', () => {
+        openWindow('win-wallpaper');
+      });
+
+      // Show Desktop Button (Minimize all windows)
+      document.getElementById('tray-show-desktop').addEventListener('click', () => {
+        openWindows.forEach(winId => minimizeWindow(winId));
+        showToast('Showing Desktop');
+      });
+
+      // Generic Copy Buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const txt = btn.getAttribute('data-copy') || document.getElementById('skill-ins-code').textContent;
+          copyText(txt);
+        });
+      });
+
+      // Print Document
+      document.getElementById('btn-print-doc').addEventListener('click', () => {
+        window.print();
+      });
+
+      // Open Profile window by default on load for an immediate immersive greeting
+      setTimeout(() => {
+        openWindow('win-profile');
+      }, 350);
+    });
+  </script>
+</body>
+</html>
